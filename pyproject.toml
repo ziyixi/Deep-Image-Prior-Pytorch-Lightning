@@ -5,7 +5,7 @@ description = ""
 authors = ["Ziyi Xi <ziyixi@mail.ustc.edu.cn>"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "deep_image_prior"}]
+packages = [{include = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"

@@ -28,8 +28,8 @@ class TrainConfig:
     lr: float = 1e-4
     accelerator: str = "gpu"
     distributed_devices: List[int] = field(
-        default_factory=lambda: [0, 1, 2, 3])
-    strategy: str = "ddp"
+        default_factory=lambda: [0])
+    check_val_every_n_epoch: int = 50
 
 
 @dataclass
@@ -39,10 +39,11 @@ class DataConfig:
     """
     data_type: str = "sidd_small"
     root_dir: Path = Path("")
-    cache_file: Path = Path("")
     image_resize: List[int] = field(default_factory=lambda: [1600, 2080])
     dataset_size: int = 160
     dataset_channel: int = 3
+
+    fig_save_dir: Path = Path("")
 
 
 # * ======================================== * #

@@ -6,8 +6,9 @@ from typing import Dict
 import pytorch_lightning as pl
 import segmentation_models_pytorch as smp
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torchmetrics.functional import peak_signal_noise_ratio
+from torchvision.utils import save_image
 
 from src.conf import Config
 
@@ -82,19 +83,30 @@ class DeepImagePriorModel(pl.LightningModule):
         self.train_conf = conf.train
 
         if self.model_conf.model_name in MODELS:
-            self.models = nn.ModuleList([MODELS[self.model_conf.model_name](
-                **MODEL_PARAMETERS[self.model_conf.model_name]) for _ in range(self.data_conf.dataset_size)])
+            self.image_model = MODELS[self.model_conf.model_name](
+                **MODEL_PARAMETERS[self.model_conf.model_name])
         else:
             raise Exception(
                 f"model {self.model_conf.model_name} is not implemented!")
 
-    def training_step(self, batch: Dict, batch_idx: int) -> torch.Tensor:
-        noise, ref = batch["noise"], batch["input"]
-        output = self.models[batch_idx](noise)
-        loss = F.mse_loss(output, ref)
-        self.log("loss", loss, on_step=False, on_epoch=True, prog_bar=True)
+    def training_step(self, batch: Dict, batch_idx: int):
+        noise_input, noise_fig = batch["noise_input"], batch["noise_fig"]
+        output = self.image_model(noise_input)
+        loss = F.mse_loss(output, noise_fig)
         return {
             "loss": loss
+        }
+
+    def validation_step(self, batch: Dict, batch_idx: int):
+        noise_input, target_fig, key = batch["noise_input"], batch["target_fig"], batch["key"]
+        output = self.image_model(noise_input)
+        psnr = peak_signal_noise_ratio(output, target_fig)
+        # save fig
+        fig_name = self.data_conf.fig_save_dir / \
+            f"{key[0]}_step{self.current_epoch}_psnr{psnr:.2f}.png"
+        save_image(output[0], fig_name)
+        return {
+            "psnr": psnr
         }
 
     def configure_optimizers(self):

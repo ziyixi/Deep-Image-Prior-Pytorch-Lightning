@@ -5,11 +5,13 @@ train the deep iamge prior model and get the denoised figure, calculate PSNR whe
 """
 import hydra
 from pytorch_lightning import Trainer, seed_everything
-from pytorch_lightning.callbacks import LearningRateMonitor, ModelSummary
 
 from src.conf import Config
 from src.data.datamodule import DeepImagePriorDataModule
 from src.model.model import DeepImagePriorModel
+
+import logging
+logging.getLogger("lightning").setLevel(logging.ERROR)
 
 
 @hydra.main(config_path=".", config_name="base_config", version_base="1.2")
@@ -21,35 +23,25 @@ def train_app(conf: Config) -> None:
     if conf.train.random_seed:
         seed_everything(conf.train.random_seed)
 
-    # * prepare light data
-    light_data = DeepImagePriorDataModule(conf.data)
-    light_data.prepare_data()
+    for idx, fig_dir in enumerate((conf.data.root_dir/"Data").iterdir()):
+        if fig_dir.is_dir():
+            light_data = DeepImagePriorDataModule(conf.data, img_dir=fig_dir)
+            light_data.setup(stage="fit")
+            print(f"train fig{idx}, key: {light_data.dataset[0]['key']}")
+            light_model = DeepImagePriorModel(conf)
 
-    # * prepare model
-    light_model = DeepImagePriorModel(conf)
-
-    # * callbacks
-    callbacks = []
-    callbacks.append(LearningRateMonitor(
-        logging_interval='epoch'))
-    callbacks.append(ModelSummary(max_depth=2))
-
-    # * trainer
-    train_conf = conf.train
-    trainer = Trainer(
-        callbacks=callbacks,
-        accelerator=train_conf.accelerator,
-        devices=(
-            train_conf.distributed_devices if train_conf.accelerator == "gpu" else None),
-        max_epochs=train_conf.epochs,
-        strategy=(train_conf.strategy if train_conf.accelerator ==
-                  "gpu" else None),
-        num_sanity_val_steps=0,  # no need to do this check outside development
-    )
-
-    # * train
-    light_data.setup(stage="fit")
-    trainer.fit(light_model, light_data)
+            train_conf = conf.train
+            trainer = Trainer(
+                accelerator=train_conf.accelerator,
+                devices=(
+                    train_conf.distributed_devices if train_conf.accelerator == "gpu" else None),
+                max_epochs=train_conf.epochs,
+                num_sanity_val_steps=0,
+                check_val_every_n_epoch=train_conf.check_val_every_n_epoch
+            )
+            trainer.fit(light_model, light_data)
+        if idx == 1:
+            break
 
 
 if __name__ == "__main__":
