@@ -1,1 +1,1 @@
-# Deep-Image-Prior-Pytorch-Lightning-
+# Deep-Image-Prior-Pytorch-Lightning

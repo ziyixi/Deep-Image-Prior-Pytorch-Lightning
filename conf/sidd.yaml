@@ -1,0 +1,14 @@
+# @package _global_
+
+data:
+  root_dir: /Users/ziyixi/Library/CloudStorage/OneDrive-MichiganStateUniversity/Packages_Personal/deep_image_prior/data/SIDD_Small_sRGB_Only
+  cache_file: /Users/ziyixi/Library/CloudStorage/OneDrive-MichiganStateUniversity/Packages_Personal/deep_image_prior/data/SIDD_Small_sRGB_Only.cache
+
+  dataset_size: 2
+
+train:
+  accelerator: cpu
+
+hydra:
+  job:
+    name: test
