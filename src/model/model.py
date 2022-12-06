@@ -19,8 +19,6 @@ MODELS = {
     "linknet": smp.Linknet,
     "fpn": smp.FPN,
     "pspnet": smp.PSPNet,
-    "pan": smp.PAN,
-    "deeplabv3": smp.DeepLabV3,
     "deeplabv3p": smp.DeepLabV3Plus
 }
 
@@ -98,13 +96,27 @@ class DeepImagePriorModel(pl.LightningModule):
         }
 
     def validation_step(self, batch: Dict, batch_idx: int):
-        noise_input, target_fig, key = batch["noise_input"], batch["target_fig"], batch["key"]
+        noise_input, noise_fig, target_fig, key = batch["noise_input"], batch[
+            "noise_fig"], batch["target_fig"], batch["key"]
         output = self.image_model(noise_input)
         psnr = peak_signal_noise_ratio(output, target_fig)
-        # save fig
+        # * save fig
         fig_name = self.data_conf.fig_save_dir / \
             f"{key[0]}_step{self.current_epoch}_psnr{psnr:.2f}.png"
         save_image(output[0], fig_name)
+        # * save raw and target
+        raw_psnr = peak_signal_noise_ratio(noise_fig, target_fig)
+        raw_fig_name = self.data_conf.fig_save_dir / \
+            f"{key[0]}_step0_psnr{raw_psnr:.2f}.png"
+        if not raw_fig_name.exists():
+            save_image(noise_fig[0], raw_fig_name)
+
+        target_psnr = peak_signal_noise_ratio(target_fig, target_fig)
+        target_fig_name = self.data_conf.fig_save_dir / \
+            f"{key[0]}_stepinf_psnr{target_psnr:.2f}.png"
+        if not target_fig_name.exists():
+            save_image(target_fig[0], target_fig_name)
+
         return {
             "psnr": psnr
         }

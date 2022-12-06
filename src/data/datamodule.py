@@ -29,13 +29,13 @@ class DeepImagePriorDataModule(pl.LightningDataModule):
         transform = Compose([Resize(tuple(self.data_conf.image_resize))])
         if self.data_conf.data_type == "sidd_small":
             self.dataset = SIDDSmall(
-                self.img_dir, transform=transform)
+                self.img_dir, transform=transform, batch_size=self.data_conf.batch_size)
         else:
             raise Exception(
                 f"data type {self.data_conf.data_type} is not implemented!")
 
     def train_dataloader(self):
-        return DataLoader(self.dataset, batch_size=1, shuffle=False, num_workers=0)
+        return DataLoader(self.dataset, batch_size=self.data_conf.batch_size, shuffle=False, num_workers=0)
 
     def val_dataloader(self):
-        return DataLoader(self.dataset, batch_size=1, shuffle=False, num_workers=0)
+        return DataLoader(self.dataset, batch_size=self.data_conf.batch_size, shuffle=False, num_workers=0)

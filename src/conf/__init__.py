@@ -25,7 +25,7 @@ class TrainConfig:
     """
     epochs: int = 100
     random_seed: Optional[int] = 1234
-    lr: float = 1e-4
+    lr: float = 2e-4
     accelerator: str = "gpu"
     distributed_devices: List[int] = field(
         default_factory=lambda: [0])
@@ -37,6 +37,7 @@ class DataConfig:
     """ 
     Specify the data details.
     """
+    batch_size: int = 1
     data_type: str = "sidd_small"
     root_dir: Path = Path("")
     image_resize: List[int] = field(default_factory=lambda: [1600, 2080])
@@ -44,6 +45,7 @@ class DataConfig:
     dataset_channel: int = 3
 
     fig_save_dir: Path = Path("")
+    total_run_figs_number: int = 20
 
 
 # * ======================================== * #

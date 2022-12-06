@@ -23,7 +23,7 @@ def train_app(conf: Config) -> None:
     if conf.train.random_seed:
         seed_everything(conf.train.random_seed)
 
-    for idx, fig_dir in enumerate((conf.data.root_dir/"Data").iterdir()):
+    for idx, fig_dir in enumerate(conf.data.root_dir.iterdir()):
         if fig_dir.is_dir():
             light_data = DeepImagePriorDataModule(conf.data, img_dir=fig_dir)
             light_data.setup(stage="fit")
@@ -37,10 +37,11 @@ def train_app(conf: Config) -> None:
                     train_conf.distributed_devices if train_conf.accelerator == "gpu" else None),
                 max_epochs=train_conf.epochs,
                 num_sanity_val_steps=0,
-                check_val_every_n_epoch=train_conf.check_val_every_n_epoch
+                check_val_every_n_epoch=train_conf.check_val_every_n_epoch,
+                enable_progress_bar=True
             )
             trainer.fit(light_model, light_data)
-        if idx == 1:
+        if idx == conf.data.total_run_figs_number-1:
             break
 
 

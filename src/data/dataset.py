@@ -16,7 +16,7 @@ class SIDDSmall(Dataset):
     wrap only a single dir
     """
 
-    def __init__(self, img_directory: Path, transform: Optional[torch.nn.Module] = None) -> None:
+    def __init__(self, img_directory: Path, transform: Optional[torch.nn.Module] = None, batch_size: int = 1) -> None:
         super().__init__()
         # load the figures
         for fig in img_directory.iterdir():
@@ -27,6 +27,7 @@ class SIDDSmall(Dataset):
         self.noise_input = torch.randn(self.noise_fig.shape)
         self.key = img_directory.parts[-1]
         self.transform = transform
+        self.batch_size = batch_size
 
     def __getitem__(self, idx: int) -> Dict[str, Union[str, torch.Tensor]]:
         # only one item in the dataset
@@ -38,4 +39,4 @@ class SIDDSmall(Dataset):
         }
 
     def __len__(self):
-        return 1
+        return self.batch_size

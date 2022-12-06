@@ -1,0 +1,32 @@
+# @package _global_
+
+data:
+  root_dir: /mnt/home/xiziyi/Packages_Research/deep_image_prior/data/SIDD_Small_sRGB_Only/SmallData
+
+  dataset_size: 20
+  image_resize: [1600,2080]
+
+  fig_save_dir: /mnt/home/xiziyi/Packages_Research/deep_image_prior/figs/fpn
+  total_run_figs_number: 20
+  batch_size: 1
+
+train:
+  accelerator: gpu
+  distributed_devices: [0]
+  epochs: 1600
+  check_val_every_n_epoch: 200
+
+model:
+  model_name: fpn
+
+hydra:
+  job:
+    name: fpn
+  launcher:
+    timeout_min: 480
+    nodes: 1
+    tasks_per_node: 1
+    cpus_per_task: 4
+    mem_gb: 50
+    gres: gpu:v100:1
+    account: cmse
