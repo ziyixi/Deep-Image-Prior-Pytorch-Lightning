@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader, Dataset
 from torchvision.transforms import Compose, Resize
 
 from src.conf import DataConfig
-from src.data.dataset import SIDDSmall
+from src.data.dataset import SIDDRandomMask, SIDDSmall
 
 
 class DeepImagePriorDataModule(pl.LightningDataModule):
@@ -30,6 +30,9 @@ class DeepImagePriorDataModule(pl.LightningDataModule):
         if self.data_conf.data_type == "sidd_small":
             self.dataset = SIDDSmall(
                 self.img_dir, transform=transform, batch_size=self.data_conf.batch_size)
+        elif self.data_conf.data_type == "sidd_mask":
+            self.dataset = SIDDRandomMask(
+                self.img_dir, transform=transform, batch_size=self.data_conf.batch_size, mask_threshold=self.data_conf.mask_threshold, image_resize=self.data_conf.image_resize)
         else:
             raise Exception(
                 f"data type {self.data_conf.data_type} is not implemented!")

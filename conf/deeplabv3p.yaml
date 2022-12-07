@@ -10,6 +10,9 @@ data:
   total_run_figs_number: 20
   batch_size: 2
 
+  data_type: sidd_mask
+  mask_threshold: 0.5
+
 train:
   accelerator: gpu
   distributed_devices: [0]

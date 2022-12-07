@@ -88,28 +88,57 @@ class DeepImagePriorModel(pl.LightningModule):
                 f"model {self.model_conf.model_name} is not implemented!")
 
     def training_step(self, batch: Dict, batch_idx: int):
-        noise_input, noise_fig = batch["noise_input"], batch["noise_fig"]
-        output = self.image_model(noise_input)
-        loss = F.mse_loss(output, noise_fig)
+        if self.data_conf.data_type == "sidd_small":
+            noise_input, noise_fig = batch["noise_input"], batch["noise_fig"]
+            output = self.image_model(noise_input)
+            loss = F.mse_loss(output, noise_fig)
+        elif self.data_conf.data_type == "sidd_mask":
+            noise_input, mask_fig, mask = batch["noise_input"], batch["mask_fig"], batch["mask"]
+            output = self.image_model(noise_input)
+            mask_output = output*mask
+            loss = F.mse_loss(mask_output, mask_fig)
+        else:
+            raise Exception(
+                f"data_type {self.data_conf.data_type} is not implemented!")
         return {
             "loss": loss
         }
 
     def validation_step(self, batch: Dict, batch_idx: int):
-        noise_input, noise_fig, target_fig, key = batch["noise_input"], batch[
-            "noise_fig"], batch["target_fig"], batch["key"]
-        output = self.image_model(noise_input)
+        if self.data_conf.data_type == "sidd_small":
+            noise_input, noise_fig, target_fig, key = batch["noise_input"], batch[
+                "noise_fig"], batch["target_fig"], batch["key"]
+            output = self.image_model(noise_input)
+        elif self.data_conf.data_type == "sidd_mask":
+            noise_input, mask_fig, target_fig, key = batch["noise_input"], batch[
+                "mask_fig"], batch["target_fig"], batch["key"]
+            output = self.image_model(noise_input)
+        else:
+            raise Exception(
+                f"data_type {self.data_conf.data_type} is not implemented!")
         psnr = peak_signal_noise_ratio(output, target_fig)
+
         # * save fig
         fig_name = self.data_conf.fig_save_dir / \
             f"{key[0]}_step{self.current_epoch}_psnr{psnr:.2f}.png"
         save_image(output[0], fig_name)
+
         # * save raw and target
-        raw_psnr = peak_signal_noise_ratio(noise_fig, target_fig)
-        raw_fig_name = self.data_conf.fig_save_dir / \
-            f"{key[0]}_step0_psnr{raw_psnr:.2f}.png"
-        if not raw_fig_name.exists():
-            save_image(noise_fig[0], raw_fig_name)
+        if self.data_conf.data_type == "sidd_small":
+            raw_psnr = peak_signal_noise_ratio(noise_fig, target_fig)
+            raw_fig_name = self.data_conf.fig_save_dir / \
+                f"{key[0]}_step0_psnr{raw_psnr:.2f}.png"
+            if not raw_fig_name.exists():
+                save_image(noise_fig[0], raw_fig_name)
+        elif self.data_conf.data_type == "sidd_mask":
+            raw_psnr = peak_signal_noise_ratio(mask_fig, target_fig)
+            raw_fig_name = self.data_conf.fig_save_dir / \
+                f"{key[0]}_step0_psnr{raw_psnr:.2f}.png"
+            if not raw_fig_name.exists():
+                save_image(mask_fig[0], raw_fig_name)
+        else:
+            raise Exception(
+                f"data_type {self.data_conf.data_type} is not implemented!")
 
         target_psnr = peak_signal_noise_ratio(target_fig, target_fig)
         target_fig_name = self.data_conf.fig_save_dir / \

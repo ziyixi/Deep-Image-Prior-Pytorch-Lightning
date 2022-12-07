@@ -165,4 +165,6 @@ data/
 outputs/
 poetry.lock
 figs/
+figs_mask/
+figs_noise/
 multirun/

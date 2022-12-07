@@ -43,6 +43,7 @@ class DataConfig:
     image_resize: List[int] = field(default_factory=lambda: [1600, 2080])
     dataset_size: int = 160
     dataset_channel: int = 3
+    mask_threshold: float = 0.5
 
     fig_save_dir: Path = Path("")
     total_run_figs_number: int = 20

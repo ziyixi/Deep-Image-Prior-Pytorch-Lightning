@@ -6,14 +6,17 @@ data:
   dataset_size: 20
   image_resize: [1600,2080]
 
-  fig_save_dir: /mnt/home/xiziyi/Packages_Research/deep_image_prior/figs/unet
-  total_run_figs_number: 20
+  fig_save_dir: /mnt/home/xiziyi/Packages_Research/deep_image_prior/figs/test
+  total_run_figs_number: 1
   batch_size: 1
+
+  data_type: sidd_mask
+  mask_threshold: 0.5
 
 train:
   accelerator: gpu
   distributed_devices: [0]
-  epochs: 1600
+  epochs: 400
   check_val_every_n_epoch: 200
 
 model:
@@ -21,12 +24,12 @@ model:
 
 hydra:
   job:
-    name: unet
-  launcher:
-    timeout_min: 480
-    nodes: 1
-    tasks_per_node: 1
-    cpus_per_task: 4
-    mem_gb: 50
-    gres: gpu:v100:1
-    account: cmse
+    name: test
+  # launcher:
+  #   timeout_min: 30
+  #   nodes: 1
+  #   tasks_per_node: 1
+  #   cpus_per_task: 4
+  #   mem_gb: 50
+  #   gres: gpu:v100:1
+  #   account: cmse
